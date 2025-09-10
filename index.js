@@ -12,15 +12,12 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
-const allowedOrigins = [
-  'http://localhost:3000',
-  'http://localhost:5173',
-  'https://rural-innovate-frontend.onrender.com',
-  process.env.FRONTEND_URL  // Add your frontend URL as environment variable
-].filter(Boolean); // Remove any undefined values
-
 app.use(cors({
-  origin: allowedOrigins,
+  origin: [
+    'http://localhost:3000',
+    'http://localhost:5173',
+    'https://rural-innovate-frontend.onrender.com'
+  ],
   credentials: true
 }));
 app.use(express.json());
@@ -61,4 +58,3 @@ app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).send('Server Error');
 });
-

@@ -1,9 +1,10 @@
 import { useContext, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 
 const Navbar = () => {
   const { isAuthenticated, logout, user } = useContext(AuthContext);
+  const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const toggleMenu = () => {
@@ -16,6 +17,9 @@ const Navbar = () => {
 
   const authLinks = (
     <ul className={`navbar-menu ${isMenuOpen ? 'active' : ''}`}>
+      <li>
+        <Link to="/" onClick={closeMenu}>Home</Link>
+      </li>
       <li>
         <Link to="/ideas" onClick={closeMenu}>Ideas</Link>
       </li>
@@ -30,7 +34,7 @@ const Navbar = () => {
         </li>
       )}
       <li>
-        <a onClick={() => { logout(); closeMenu(); }} href="#!">
+        <a onClick={() => { logout(); closeMenu(); navigate('/'); }} href="#!">
           <i className="fas fa-sign-out-alt"></i>{' '}
           <span className="hide-sm">Logout</span>
         </a>
@@ -40,6 +44,9 @@ const Navbar = () => {
 
   const guestLinks = (
     <ul className={`navbar-menu ${isMenuOpen ? 'active' : ''}`}>
+      <li>
+        <Link to="/" onClick={closeMenu}>Home</Link>
+      </li>
       <li>
         <Link to="/ideas" onClick={closeMenu}>Ideas</Link>
       </li>

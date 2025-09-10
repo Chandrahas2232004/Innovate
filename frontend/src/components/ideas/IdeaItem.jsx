@@ -93,31 +93,21 @@ const IdeaItem = ({ idea, showActions = true }) => {
       )}
       
       {showActions && (
-        <div className="mt-2">
-          <Link to={`/ideas/${_id}`} className="btn btn-primary">
-            View Details
-          </Link>
-          
+        <div className="mt-2 button-row">
+          <Link to={`/ideas/${_id}`} className="btn btn-primary">View Details</Link>
           {user && user.role === 'funder' && (
             <button 
               onClick={handleInterest} 
-              className="btn btn-success m-1"
-                          disabled={interestedFunders?.some(f => f._id === user._id || f === user._id)}
-          >
-            {interestedFunders?.some(f => f._id === user._id || f === user._id)
-              ? 'Interested' 
-              : 'Express Interest'}
+              className="btn btn-success"
+              disabled={interestedFunders?.some(f => f._id === user._id || f === user._id)}
+            >
+              {interestedFunders?.some(f => f._id === user._id || f === user._id) ? 'Interested' : 'Express Interest'}
             </button>
           )}
-          
           {user && user._id === author?._id && (
             <>
-              <Link to={`/edit-idea/${_id}`} className="btn btn-dark m-1">
-                Edit
-              </Link>
-              <button onClick={handleDelete} className="btn btn-danger m-1">
-                Delete
-              </button>
+              <Link to={`/edit-idea/${_id}`} className="btn btn-dark">Edit</Link>
+              <button onClick={handleDelete} className="btn btn-danger">Delete</button>
             </>
           )}
         </div>

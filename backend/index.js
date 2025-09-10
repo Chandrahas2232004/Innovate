@@ -15,19 +15,25 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'OK', message: 'Server is running' });
+});
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/ideas', ideaRoutes);
 app.use('/api/users', userRoutes);
 
-// Connect to MongoDB (local)
+// Connect to MongoDB
 const mongoURI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/innovate';
+console.log('Environment MONGO_URI:', process.env.MONGO_URI ? 'Set' : 'Not set');
 console.log('Connecting to MongoDB at:', mongoURI);
-mongoose.connect(mongoURI, {
-  dbName: 'innovate' // Force the database name
-})
+
+mongoose.connect(mongoURI)
 .then(() => {
-  console.log('MongoDB connected');
+  console.log('MongoDB connected successfully');
+  console.log('Database name:', mongoose.connection.db.databaseName);
   
   // Start server
   app.listen(PORT, () => {
@@ -35,7 +41,8 @@ mongoose.connect(mongoURI, {
   });
 })
 .catch(err => {
-  console.error('MongoDB connection error:', err.message);
+  console.error('MongoDB connection error:', err);
+  console.error('Error details:', err.message);
   process.exit(1);
 });
 

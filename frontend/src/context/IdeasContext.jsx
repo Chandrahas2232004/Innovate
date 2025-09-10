@@ -106,17 +106,20 @@ const IdeasProvider = ({ children }) => {
         type: 'GET_IDEA',
         payload: res.data
       });
+      return res.data;
     } catch (err) {
       console.error('IdeasContext: Error fetching idea:', err);
       dispatch({
         type: 'IDEA_ERROR',
         payload: err.response?.data.msg || 'Error fetching idea'
       });
+      return null;
     }
   };
 
   // Add idea
   const addIdea = async (formData) => {
+    console.log('IdeasContext: addIdea called with:', formData);
     const config = {
       headers: {
         'Content-Type': 'application/json'
@@ -125,13 +128,17 @@ const IdeasProvider = ({ children }) => {
 
     try {
       dispatch({ type: 'SET_LOADING' });
+      console.log('IdeasContext: Making POST request to /api/ideas');
       const res = await axios.post('/api/ideas', formData, config);
+      console.log('IdeasContext: Response received:', res.data);
       dispatch({
         type: 'ADD_IDEA',
         payload: res.data
       });
       return res.data;
     } catch (err) {
+      console.error('IdeasContext: Error creating idea:', err);
+      console.error('IdeasContext: Error response:', err.response?.data);
       dispatch({
         type: 'IDEA_ERROR',
         payload: err.response?.data.msg || 'Error creating idea'

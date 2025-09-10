@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 const auth = (req, res, next) => {
   // Get token from header
   const token = req.header('x-auth-token');
+  console.log('Auth middleware: Token received:', token ? 'Yes' : 'No');
 
   // Check if no token
   if (!token) {
@@ -13,6 +14,7 @@ const auth = (req, res, next) => {
   // Verify token
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log('Auth middleware: Token decoded successfully, user:', decoded.user);
     req.user = decoded.user;
     next();
   } catch (err) {

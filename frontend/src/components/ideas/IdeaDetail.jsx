@@ -118,7 +118,7 @@ const IdeaDetail = () => {
       </Link>
       
       {user && user._id === author._id && (
-        <div className="idea-actions my-1">
+        <div className="idea-actions my-1 button-row">
           <Link to={`/edit-idea/${id}`} className="btn btn-dark">
             <i className="fas fa-edit"></i> Edit
           </Link>
@@ -207,7 +207,7 @@ const IdeaDetail = () => {
         </div>
         
         {user && user.role === 'funder' && (
-          <div className="my-1">
+          <div className="my-1 button-row">
             <button 
               onClick={handleInterest} 
               className="btn btn-success"

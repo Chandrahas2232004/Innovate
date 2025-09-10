@@ -141,7 +141,11 @@ export const AuthProvider = ({ children }) => {
   };
 
   // Logout
-  const logout = () => dispatch({ type: 'LOGOUT' });
+  const logout = () => {
+    // Ensure axios auth header is cleared
+    setAuthToken(null);
+    dispatch({ type: 'LOGOUT' });
+  };
 
   // Clear Errors
   const clearErrors = () => dispatch({ type: 'CLEAR_ERRORS' });

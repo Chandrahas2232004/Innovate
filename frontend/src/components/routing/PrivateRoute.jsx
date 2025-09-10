@@ -5,6 +5,7 @@ import Spinner from '../layout/Spinner';
 
 const PrivateRoute = ({ children }) => {
   const { isAuthenticated, loading } = useContext(AuthContext);
+  console.log('PrivateRoute: isAuthenticated:', isAuthenticated, 'loading:', loading);
 
   if (loading) return <Spinner />;
   

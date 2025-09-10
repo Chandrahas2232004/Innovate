@@ -28,6 +28,11 @@ const IdeaSchema = new mongoose.Schema({
   implementationPlan: {
     type: String
   },
+  location: {
+    type: String,
+    enum: ['urban', 'rural', 'suburban', 'coastal', 'inland', 'unknown'],
+    default: 'unknown'
+  },
   successRate: {
     type: Number,
     default: null

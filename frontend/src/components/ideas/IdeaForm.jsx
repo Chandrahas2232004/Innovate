@@ -1,10 +1,11 @@
 import { useState, useEffect, useContext } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, Link } from 'react-router-dom';
 import { IdeasContext } from '../../context/IdeasContext';
 import { AuthContext } from '../../context/AuthContext';
 import { AlertContext } from '../../context/AlertContext';
 
 const IdeaForm = () => {
+  console.log('IdeaForm component loaded');
   const { addIdea, updateIdea, getIdeaById, error } = useContext(IdeasContext);
   const { id } = useParams();
   const navigate = useNavigate();
@@ -17,7 +18,8 @@ const IdeaForm = () => {
     targetAudience: '',
     requiredFunding: '',
     expectedImpact: '',
-    implementationPlan: ''
+    implementationPlan: '',
+    location: ''
   });
   
   const [formError, setFormError] = useState('');
@@ -29,7 +31,8 @@ const IdeaForm = () => {
     targetAudience,
     requiredFunding,
     expectedImpact,
-    implementationPlan
+    implementationPlan,
+    location
   } = formData;
   
   useEffect(() => {
@@ -44,7 +47,8 @@ const IdeaForm = () => {
             targetAudience: idea.targetAudience || '',
             requiredFunding: idea.requiredFunding || '',
             expectedImpact: idea.expectedImpact || '',
-            implementationPlan: idea.implementationPlan || ''
+            implementationPlan: idea.implementationPlan || '',
+            location: idea.location || ''
           });
         }
       }
@@ -59,9 +63,11 @@ const IdeaForm = () => {
   
   const onSubmit = async e => {
     e.preventDefault();
+    console.log('Frontend: Form submitted with data:', formData);
+    console.log('Frontend: Form validation check - title:', title, 'description:', description, 'category:', category, 'targetAudience:', targetAudience, 'requiredFunding:', requiredFunding, 'location:', location);
     
     // Validate form
-    if (!title || !description || !category || !targetAudience || !requiredFunding) {
+    if (!title || !description || !category || !targetAudience || !requiredFunding || !location) {
       setFormError('Please fill in all required fields');
       return;
     }
@@ -72,12 +78,16 @@ const IdeaForm = () => {
       requiredFunding: parseFloat(requiredFunding)
     };
     
+    console.log('Frontend: Sending idea data:', ideaData);
+    
     let success;
     if (isEditing) {
       success = await updateIdea(id, ideaData);
     } else {
       success = await addIdea(ideaData);
     }
+    
+    console.log('Frontend: Idea submission result:', success);
     
     if (success) {
       navigate('/dashboard');
@@ -110,6 +120,20 @@ const IdeaForm = () => {
             onChange={onChange}
           />
           <small className="form-text">A catchy title for your idea</small>
+        </div>
+
+        <div className="form-group">
+          <select name="location" value={location} onChange={onChange}>
+            <option value="">* Select Location</option>
+            <option value="urban">Urban</option>
+            <option value="rural">Rural</option>
+            <option value="suburban">Suburban</option>
+            <option value="coastal">Coastal</option>
+            <option value="inland">Inland</option>
+          </select>
+          <small className="form-text">
+            Choose the primary location context for this project
+          </small>
         </div>
         
         <div className="form-group">
@@ -194,11 +218,14 @@ const IdeaForm = () => {
           </small>
         </div>
         
-        <input
-          type="submit"
-          className="btn btn-primary my-1"
-          value={isEditing ? 'Update Idea' : 'Submit Idea'}
-        />
+        <div className="button-row my-1">
+          <input
+            type="submit"
+            className="btn btn-primary"
+            value={isEditing ? 'Update Idea' : 'Submit Idea'}
+          />
+          <Link to="/ideas" className="btn btn-light">Cancel</Link>
+        </div>
       </form>
     </section>
   );

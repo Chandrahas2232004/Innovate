@@ -3,6 +3,7 @@ import Idea from '../models/Idea.js';
 import auth from '../middleware/auth.js';
 import roleCheck from '../middleware/roleCheck.js';
 import { predictSuccessRate, getSuccessRateExplanation } from '../utils/mlPredictor.js';
+import User from '../models/User.js';
 
 const router = express.Router();
 
@@ -51,6 +52,9 @@ router.get('/:id', async (req, res) => {
 // @desc    Create a new idea
 // @access  Private (Startupers only)
 router.post('/', [auth, roleCheck('startuper')], async (req, res) => {
+  console.log('Backend: POST /api/ideas - Creating new idea');
+  console.log('Backend: Request body:', req.body);
+  console.log('Backend: User from token:', req.user);
   const {
     title,
     description,
@@ -58,7 +62,8 @@ router.post('/', [auth, roleCheck('startuper')], async (req, res) => {
     targetAudience,
     requiredFunding,
     expectedImpact,
-    implementationPlan
+    implementationPlan,
+    location
   } = req.body;
   
   try {
@@ -70,11 +75,21 @@ router.post('/', [auth, roleCheck('startuper')], async (req, res) => {
       requiredFunding,
       expectedImpact,
       implementationPlan,
+      location: location || undefined,
       author: req.user.id
     });
     
+    // Fetch author's location for prediction
+    const author = await User.findById(req.user.id).select('location');
+    const authorLocation = author?.location || 'unknown';
+
     // Predict success rate using ML model
-    const successRate = await predictSuccessRate(newIdea);
+    const successRate = await predictSuccessRate({
+      category,
+      targetAudience,
+      requiredFunding,
+      authorLocation: (location && location !== 'unknown') ? location : authorLocation
+    });
     newIdea.successRate = successRate;
     
     const idea = await newIdea.save();
@@ -97,7 +112,8 @@ router.put('/:id', auth, async (req, res) => {
     targetAudience,
     requiredFunding,
     expectedImpact,
-    implementationPlan
+    implementationPlan,
+    location
   } = req.body;
   
   try {
@@ -120,9 +136,20 @@ router.put('/:id', auth, async (req, res) => {
     idea.requiredFunding = requiredFunding;
     idea.expectedImpact = expectedImpact;
     idea.implementationPlan = implementationPlan;
+    if (location) {
+      idea.location = location;
+    }
     
-    // Re-predict success rate
-    const successRate = await predictSuccessRate(idea);
+    // Fetch author's location and re-predict success rate
+    const author = await User.findById(req.user.id).select('location');
+    const authorLocation = author?.location || 'unknown';
+
+    const successRate = await predictSuccessRate({
+      category,
+      targetAudience,
+      requiredFunding,
+      authorLocation: (location && location !== 'unknown') ? location : authorLocation
+    });
     idea.successRate = successRate;
     
     await idea.save();
@@ -219,12 +246,44 @@ router.get('/:id/explanation', async (req, res) => {
     if (!idea) {
       return res.status(404).json({ msg: 'Idea not found' });
     }
+
+    // Fetch author's location for explanation, preferring idea.location if provided
+    const author = await User.findById(idea.author).select('location');
+    const authorLocation = author?.location || 'unknown';
+    const effectiveLocation = (idea.location && idea.location !== 'unknown') ? idea.location : authorLocation;
     
-    const explanation = getSuccessRateExplanation(idea);
+    const modelExpl = getSuccessRateExplanation({
+      category: idea.category,
+      targetAudience: idea.targetAudience,
+      requiredFunding: idea.requiredFunding,
+      authorLocation: effectiveLocation
+    });
+
+    // Transform to legacy array the frontend expects
+    const factors = [];
+    const terms = modelExpl?.features?.terms || [];
+    for (const t of terms) {
+      const impact = (typeof t.weight === 'number' && t.weight >= 0) ? 'positive' : 'negative';
+      let text;
+      if (t.feature.startsWith('category:')) {
+        text = `Projects in ${t.feature.split(':')[1]} category influence the success rate (${impact}).`;
+      } else if (t.feature === 'requiredFunding(log-normalized)') {
+        const pct = Math.round(Math.abs(t.weight) * 100);
+        text = `Higher funding requirement reduces success likelihood by ~${pct}% (relative).`;
+      } else if (t.feature === 'targetAudienceLength(norm)') {
+        const pct = Math.round(Math.abs(t.weight) * 100);
+        text = `A clearer target audience description improves success likelihood by ~${pct}% (relative).`;
+      } else if (t.feature.startsWith('authorLocation:')) {
+        text = `Founder location ${t.feature.split(':')[1]} affects feasibility (${impact}).`;
+      } else {
+        text = `${t.feature} has a ${impact} effect.`;
+      }
+      factors.push({ factor: t.feature, impact, explanation: text });
+    }
     
     res.json({
       successRate: idea.successRate,
-      explanation
+      explanation: factors
     });
   } catch (err) {
     console.error(err.message);

@@ -1,0 +1,39 @@
+{
+  "weights": [
+    -0.12465486762103961,
+    0.23122479567796614,
+    1.253515979261834,
+    1.5378897508361644,
+    -0.8015874429067457,
+    -0.9031041725817132,
+    -0.8208478384967645,
+    2.8216290633225727,
+    1.3569193683167238,
+    0.5757558020399394,
+    -0.6161739144804006,
+    0.760804099646791,
+    -0.22013825036823273,
+    -0.663883062488355
+  ],
+  "bias": 1.1932840426664655,
+  "featureOrder": {
+    "CATEGORY_VALUES": [
+      "agriculture",
+      "education",
+      "healthcare",
+      "technology",
+      "infrastructure",
+      "other"
+    ],
+    "LOCATION_VALUES": [
+      "urban",
+      "suburban",
+      "rural",
+      "coastal",
+      "inland",
+      "unknown"
+    ],
+    "funding": "logNormalize",
+    "audienceLength": "0..1 by /200 cap"
+  }
+}
